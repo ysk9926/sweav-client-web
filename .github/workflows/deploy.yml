@@ -1,0 +1,272 @@
+name: CI/CD with Jest & Vercel
+
+on:
+  pull_request:
+    branches:
+      - dev
+  push:
+    branches:
+      - dev
+
+jobs:
+  test_and_build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ 코드 체크아웃
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2️⃣ Node.js 설정
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
+
+      # 3️⃣ 패키지 설치
+      - name: Install dependencies
+        run: npm install
+
+      # 4️⃣ Jest 테스트 실행 (PR 시 수행)
+      - name: Run Jest Tests
+        if: github.event_name == 'pull_request'
+        run: npm test
+
+      # 5️⃣ 빌드 테스트 실행 (PR & Merge 시 수행)
+      - name: Build Test
+        run: npm run build
+
+      # 6️⃣ Jest 성공 시 Discord 알림 (PR 시에만 실행)
+      - name: Notify Discord on Jest Success
+        if: success() && github.event_name == 'pull_request'
+        run: |
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+
+          JSON_PAYLOAD=$(jq -n \
+            --arg username "Deploy Bot" \
+            --arg title "✅ JEST 테스트 성공! 🎉" \
+            --arg desc1 "Next.js 프로젝트 빌드 테스트가 통과되었습니다." \
+            --arg desc2 "$PR_TITLE" \
+            --arg desc3 "($PR_URL)" \
+            --arg color "65280" \
+            '{
+              username: $username,
+              embeds: [{
+                title: $title,
+                color: ($color | tonumber),
+                fields: [
+                  { "name": "🚀 빌드 상태", "value": $desc1, "inline": false },
+                  { "name": "📌 PR 제목", "value": $desc2, "inline": false },
+                  { "name": "🔗 PR 링크", "value": $desc3, "inline": false }
+                ]
+              }]
+            }')
+
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "$JSON_PAYLOAD" \
+               "${{ secrets.DISCORD_WEBHOOK_URL }}"
+
+      # 7️⃣ 빌드 성공 시 Discord 알림 (PR & Merge 시)
+      - name: Notify Discord on Build Success
+        if: success()
+        run: |
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+
+          JSON_PAYLOAD=$(jq -n \
+            --arg username "Deploy Bot" \
+            --arg title "✅ 빌드 테스트 성공! 🎉" \
+            --arg desc1 "Next.js 프로젝트 빌드 테스트가 통과되었습니다." \
+            --arg desc2 "$PR_TITLE" \
+            --arg desc3 "($PR_URL)" \
+            --arg color "65280" \
+            '{
+              username: $username,
+              embeds: [{
+                title: $title,
+                color: ($color | tonumber),
+                fields: [
+                  { "name": "🚀 빌드 상태", "value": $desc1, "inline": false },
+                  { "name": "📌 PR 제목", "value": $desc2, "inline": false },
+                  { "name": "🔗 PR 링크", "value": $desc3, "inline": false }
+                ]
+              }]
+            }')
+
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "$JSON_PAYLOAD" \
+               "${{ secrets.DISCORD_WEBHOOK_URL }}"
+
+      # 8️⃣ Jest 실패 시 Discord 알림 (PR 시에만 실행)
+      - name: Notify Discord on Jest Failure
+        if: failure() && github.event_name == 'pull_request'
+        run: |
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+
+          JSON_PAYLOAD=$(jq -n \
+            --arg username "Deploy Bot" \
+            --arg title "❌ Jest 테스트 실패! 🚨" \
+            --arg desc1 "테스트 실패로 인해 병합이 차단되었습니다." \
+            --arg desc2 "$PR_TITLE" \
+            --arg desc3 "($PR_URL)" \
+            --arg color "15158332" \
+            '{
+              username: $username,
+              embeds: [{
+                title: $title,
+                color: ($color | tonumber),
+                fields: [
+                  { "name": "🚨 오류 상태", "value": $desc1, "inline": false },
+                  { "name": "📌 PR 제목", "value": $desc2, "inline": false },
+                  { "name": "🔗 PR 링크", "value": $desc3, "inline": false },
+                ]
+              }]
+            }')
+
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "$JSON_PAYLOAD" \
+               "${{ secrets.DISCORD_WEBHOOK_URL }}"
+
+      # 9️⃣ 빌드 실패 시 Discord 알림 (PR & Merge 시)
+      - name: Notify Discord on Build Failure
+        if: failure()
+        run: |
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+
+          JSON_PAYLOAD=$(jq -n \
+            --arg username "Deploy Bot" \
+            --arg title "❌ 빌드 테스트 실패! 🚨" \
+            --arg desc1 "빌드 테스트 실패로 인해 배포가 중단되었습니다." \
+            --arg desc2 "$PR_TITLE" \
+            --arg desc3 "($PR_URL)" \
+            --arg color "15158332" \
+            '{
+              username: $username,
+              embeds: [{
+                title: $title,
+                color: ($color | tonumber),
+                fields: [
+                  { "name": "🚨 오류 상태", "value": $desc1, "inline": false },
+                  { "name": "📌 PR 제목", "value": $desc2, "inline": false },
+                  { "name": "🔗 PR 링크", "value": $desc3, "inline": false },
+                ]
+              }]
+            }')
+
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "$JSON_PAYLOAD" \
+               "${{ secrets.DISCORD_WEBHOOK_URL }}"
+        continue-on-error: false
+
+  fork_and_deploy:
+    needs: test_and_build
+    if: success() && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ GitHub API를 사용하여 Fork 생성
+      - name: Fork repository using GitHub API
+        run: |
+          curl -X POST \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/sweav-org/sweav_client_web/forks
+
+      # 2️⃣ Fork가 생성될 때까지 대기 (GitHub 반영 시간 필요)
+      - name: Wait for Fork to be available
+        run: sleep 10 # 10초 대기
+
+      # 3️⃣ Fork된 레포지토리 Clone
+      - name: Checkout Forked Repository
+        uses: actions/checkout@v3
+        with:
+          repository: "ysk9926/sweav_client_web"
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      # 4️⃣ Node.js 설정
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
+
+      # 5️⃣ 패키지 설치
+      - name: Install dependencies
+        run: npm install
+
+      # 6️⃣ Vercel 배포
+      - name: Deploy to Vercel
+        run: npx vercel --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
+
+      # 7️⃣ Vercel 배포 성공 시 Discord 알림 (Merge 과정)
+      - name: Notify Discord on Vercel Success
+        if: success()
+        run: |
+          COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
+          DEPLOY_URL="https://sweav-client-web.vercel.app"
+
+          JSON_PAYLOAD=$(jq -n \
+            --arg username "Deploy Bot" \
+            --arg title "🚀 Vercel 배포 성공! 🎉" \
+            --arg desc1 "Fork된 레포지토리에서 성공적으로 배포되었습니다!" \
+            --arg desc2 "($DEPLOY_URL)" \
+            --arg desc3 "$COMMIT_MESSAGE" \
+            --arg color "65280" \
+            '{
+              username: $username,
+              embeds: [{
+                title: $title,
+                color: ($color | tonumber),
+                fields: [
+                  { "name": "✅ 배포 상태", "value": $desc1, "inline": false },
+                  { "name": "🔗 배포 링크", "value": $desc2, "inline": false },
+                  { "name": "💬 Merge Commit 메시지", "value": $desc3, "inline": false }
+                ]
+              }]
+            }')
+
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "$JSON_PAYLOAD" \
+               "${{ secrets.DISCORD_WEBHOOK_URL }}"
+
+      # 8️⃣ Vercel 배포 실패 시 Discord 알림 (Merge 과정)
+      - name: Notify Discord on Vercel Failure
+        if: failure()
+        run: |
+          COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
+          DEPLOY_URL="https://sweav-client-web.vercel.app"
+
+          JSON_PAYLOAD=$(jq -n \
+            --arg username "Deploy Bot" \
+            --arg title "🔥 Vercel 배포 실패! 🚨" \
+            --arg desc1 "Fork된 레포지토리에서 배포가 실패했습니다." \
+            --arg desc2 "$COMMIT_MESSAGE" \
+            --arg color "65280" \
+            '{
+              username: $username,
+              embeds: [{
+                title: $title,
+                color: ($color | tonumber),
+                fields: [
+                  { "name": "🚨 배포 상태", "value": $desc1, "inline": false },
+                  { "name": "💬 Merge Commit 메시지", "value": $desc2, "inline": false }
+                ]
+              }]
+            }')
+
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "$JSON_PAYLOAD" \
+               "${{ secrets.DISCORD_WEBHOOK_URL }}"
+               
+          echo "❌ Vercel 배포 실패! GitHub Actions를 종료합니다."
+          exit 1  # ❗ GitHub Actions를 강제 실패 처리 (Merge 차단)
