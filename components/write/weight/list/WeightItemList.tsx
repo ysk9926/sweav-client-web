@@ -14,11 +14,12 @@ import { useDisclosure } from "@heroui/react";
 import ExerciseSearchInput from "../../ExerciseSearchInput";
 import { useState } from "react";
 import PartFilter from "./PartFilter";
-import { useExerciseSearchInfinite } from "@/components/hook/write/useExerciseSearch";
+// import { useExerciseSearchInfinite } from "@/components/hook/write/useExerciseSearch"; // 임시코드: 실제 API 호출 대신 목데이터 사용
 import WeightItems from "./WeightItems";
 import { useInView } from "react-intersection-observer";
 import WeightSelectButton from "../../button/WeightSelectBtn";
 import SelectedWeightChips from "./SelectedWeightChips";
+import { mockWeightTrainingResponse } from "@/api/write/mocks"; // 임시코드: 목데이터 import
 
 export default function WeightItemList() {
   const isShort = useIsShortViewportHeight(600);
@@ -36,7 +37,16 @@ export default function WeightItemList() {
   // 부위 필터링
   const [part, setPart] = useState<ExercisePart>("ALL");
 
-  // 운동 조회 api
+  // 임시코드: 실제 API 호출 대신 목데이터 사용
+  const exerciseList: IExerciseItem[] = mockWeightTrainingResponse.content;
+  const hasNextPage = mockWeightTrainingResponse.hasNext;
+  const isFetchingNextPage = false;
+  const isLoading = false;
+  const isError = false;
+  const fetchNextPage = () => {}; // 임시코드: 실제 페이지네이션 대신 빈 함수
+
+  // 임시코드: 실제 API 호출 코드 주석 처리
+  /*
   const {
     data,
     fetchNextPage,
@@ -51,6 +61,8 @@ export default function WeightItemList() {
   });
   const exerciseList: IExerciseItem[] =
     data?.pages?.flatMap((page) => page.content) ?? [];
+  */
+
   const { ref: observerRef } = useInView({
     threshold: 1.0,
     onChange: (inView) => {

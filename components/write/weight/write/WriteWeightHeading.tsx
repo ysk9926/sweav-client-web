@@ -18,14 +18,19 @@ export default function WriteWeightHeading() {
       });
   }, [selectedWeightData]);
 
-  const names: string[] = useMemo<string[]>(() => selectedWeightData.map((item) => item.name), [selectedWeightData]);
+  const names: string[] = useMemo<string[]>(
+    () => selectedWeightData.map((item) => item.name),
+    [selectedWeightData]
+  );
   return (
     <div>
-      <div className="text-button-s font-medium text-text-neutral-tertiary mb-6">수행한 운동</div>
+      <div className="text-button-s font-medium text-text-neutral-tertiary mb-6">
+        수행한 운동
+      </div>
       <div className="text-text-neutral-default text-heading-xl font-bold mb-3">
         <div className="flex space-x-2">
           {parts.map((part, idx) => (
-            <div key={idx}>
+            <div key={part.code}>
               {part.name}
               {parts.length !== idx + 1 && `,`}
             </div>
@@ -38,7 +43,7 @@ export default function WriteWeightHeading() {
       </div>
       <div className="text-text-neutral-secondary text-body-m space-y-2">
         {names.map((name) => (
-          <div>{name}</div>
+          <div key={name}>{name}</div>
         ))}
       </div>
     </div>

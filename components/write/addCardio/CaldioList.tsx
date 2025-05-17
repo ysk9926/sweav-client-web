@@ -14,10 +14,10 @@ import AddCardio from "./AddCardio";
 import ExerciseSearchInput from "../ExerciseSearchInput";
 import ExerciseListItems from "./CaldioListItems";
 import CardioSelectButton from "../button/CardioSelectButton";
-import { useExerciseSearchInfinite } from "@/components/hook/write/useExerciseSearch";
 import { useInView } from "react-intersection-observer";
 import { setCookie, TokenStorageKey } from "@/components/hook/setCookie";
 import { useExerciseSearchDataStore } from "@/stores/exerciseSearchDataStore";
+import { mockCardioExerciseResponse } from "@/api/write/mocks";
 
 export default function CardioListItems() {
   // 버튼 pb 관련련
@@ -28,7 +28,16 @@ export default function CardioListItems() {
   const searchInputData = watch("searchItem") || "";
   const { exerciseSearchData } = useExerciseSearchDataStore();
 
-  // 운동 데이터 서버 통신
+  // 임시코드: 실제 API 호출 대신 목데이터 사용
+  const exerciseList: IExerciseItem[] = mockCardioExerciseResponse.content;
+  const hasNextPage = mockCardioExerciseResponse.hasNext;
+  const isFetchingNextPage = false;
+  const isLoading = false;
+  const isError = false;
+  const fetchNextPage = () => {}; // 임시코드: 실제 페이지네이션 대신 빈 함수
+
+  // 기존코드: 실제 API 호출
+  /*
   const {
     data,
     fetchNextPage,
@@ -40,6 +49,10 @@ export default function CardioListItems() {
     keyword: exerciseSearchData.searchData,
     type: ExerciseTypeEnum.CARDIO_EXERCISE,
   });
+  const exerciseList: IExerciseItem[] =
+    data?.pages?.flatMap((page) => page.content) ?? [];
+  */
+
   const { ref: observerRef } = useInView({
     threshold: 1.0,
     onChange: (inView) => {
@@ -48,8 +61,6 @@ export default function CardioListItems() {
       }
     },
   });
-  const exerciseList: IExerciseItem[] =
-    data?.pages?.flatMap((page) => page.content) ?? [];
 
   // 운동 선택 관련
   const [selectedV, setSelectedV] = useState<IExerciseItem>(unSelectedExercise);
@@ -61,32 +72,6 @@ export default function CardioListItems() {
 
   // 운동 추가 모달
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
-
-  // 새로운 운동 추가 관련 애니메이션
-  // const [newExercise, setNewExercise] = useState<number>(-1);
-  // const itemRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
-  // useEffect(() => {
-  //   setCookie(
-  //     TokenStorageKey.accessToken,
-  //     "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJTV0VBViIsImlhdCI6MTc0NDQ1ODYzMSwiZXhwIjoyMDU1NDk4NjMxLCJ1c2VySWQiOjc0MjY1Njg2OTU1Nzg2MjR9.G9KRCpW2MTyCxWJKJc8BfosK_pUa5xgyqBu-Rd80M1tNu8nxYsxxaDta536ugzmj67cfXFtlIqjc6thWt_6REQ"
-  //   );
-  // const savedId = localStorage.getItem("newExerciseId");
-  // if (savedId) {
-  //   const Id = Number(savedId);
-
-  // setTimeout(() => {
-  //   setNewExercise(Id);
-  //   const el = itemRefs.current[Id];
-  //   if (el) {
-  //     el.scrollIntoView({ behavior: "smooth", block: "center" });
-  //   }
-  // }, 100);
-
-  // setTimeout(() => setNewExercise(Id), 150);
-  // setTimeout(() => setNewExercise(-1), 600);
-  // localStorage.removeItem("newExerciseId");
-  // }
-  // }, []);
 
   return (
     <div className="h-full flex flex-col justify-between min-h-0">
@@ -100,8 +85,6 @@ export default function CardioListItems() {
       <ExerciseListItems
         exercises={exerciseList}
         selectedV={selectedV}
-        // newExercise={newExercise}
-        // itemRefs={itemRefs}
         selectExercise={selectExercise}
         onOpen={onOpen}
         isFetchingNextPage={isFetchingNextPage}
