@@ -1,50 +1,78 @@
 "use client";
 
 import { useSelectedWeightDataStore } from "@/stores/selectedWeightDataStore";
-import { IExercisepart } from "@/types/write";
-import { useMemo } from "react";
+import { IExerciseItem } from "@/types/write";
+import { useState, useEffect } from "react";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "@hello-pangea/dnd";
+import DraggableExerciseCard from "./DraggableExerciseCard";
+import { ExerciseItemWithSetInfo } from "./types";
+
+function convertToExerciseItemWithSetInfo(
+  items: IExerciseItem[]
+): ExerciseItemWithSetInfo[] {
+  return items.map((item) => ({
+    itemId: item.id.toString(),
+    exerciseName: item.name,
+    setList: [], // 최초에는 빈 배열로 초기화 (필요시 데이터 매핑)
+  }));
+}
 
 export default function WriteWeightHeading() {
   const { selectedWeightData } = useSelectedWeightDataStore();
 
-  const parts: IExercisepart[] = useMemo<IExercisepart[]>(() => {
-    const seen = new Set<string>();
-    return selectedWeightData
-      .flatMap((item) => item.parts)
-      .filter((part) => {
-        if (seen.has(part.code)) return false;
-        seen.add(part.code);
-        return true;
-      });
+  const [items, setItems] = useState<ExerciseItemWithSetInfo[]>(
+    convertToExerciseItemWithSetInfo(selectedWeightData)
+  );
+
+  useEffect(() => {
+    setItems(convertToExerciseItemWithSetInfo(selectedWeightData));
   }, [selectedWeightData]);
 
-  const names: string[] = useMemo<string[]>(
-    () => selectedWeightData.map((item) => item.name),
-    [selectedWeightData]
-  );
+  // DnD 완료 시 순서 변경
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+    const newItems = Array.from(items);
+    const [removed] = newItems.splice(result.source.index, 1);
+    newItems.splice(result.destination.index, 0, removed);
+    setItems(newItems);
+  };
+
   return (
-    <div>
-      <div className="text-button-s font-medium text-text-neutral-tertiary mb-6">
-        수행한 운동
-      </div>
-      <div className="text-text-neutral-default text-heading-xl font-bold mb-3">
-        <div className="flex space-x-2">
-          {parts.map((part, idx) => (
-            <div key={part.code}>
-              {part.name}
-              {parts.length !== idx + 1 && `,`}
-            </div>
-          ))}
-        </div>
-        <div>
-          <span className="font-outfit">{names.length}</span>
-          <span>가지 운동</span>
-        </div>
-      </div>
-      <div className="text-text-neutral-secondary text-body-m space-y-2">
-        {names.map((name) => (
-          <div key={name}>{name}</div>
-        ))}
+    <div className="h-full overflow-auto min-h-0 bg-fill-neutral-secondary">
+      <div className="max-w-md p-6">
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="exercise-list">
+            {(provided) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="space-y-3"
+              >
+                {items.map((item, idx) => (
+                  <Draggable
+                    key={item.itemId}
+                    draggableId={item.itemId}
+                    index={idx}
+                  >
+                    {(provided, snapshot) => (
+                      <DraggableExerciseCard
+                        item={item}
+                        provided={provided}
+                        snapshot={snapshot}
+                      />
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       </div>
     </div>
   );

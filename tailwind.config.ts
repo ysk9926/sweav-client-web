@@ -157,6 +157,9 @@ const config: Config = {
 
         // Button / Line / Disabled
         "button-line-disabled-default": "#dcdad7",
+
+        // Text / Etc
+        "text-etc-coral": "#F17E61",
       },
     },
   },
