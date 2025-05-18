@@ -4,6 +4,9 @@ import DotMenu from "@/shared/icons/DotMenu";
 import ReorderSimpleCard from "./ReorderSimpleCard";
 import { useFormContext, Controller } from "react-hook-form";
 import { useState, useRef, useEffect } from "react";
+import ExerciseCardMenu from "./ExerciseCardMenu";
+import { useSelectedWeightDataStore } from "@/stores/selectedWeightDataStore";
+import { useRouter } from "next/navigation";
 
 interface DraggableExerciseCardProps {
   item: ExerciseItemWithSetInfo;
@@ -28,6 +31,11 @@ export default function DraggableExerciseCard({
 }: DraggableExerciseCardProps) {
   const { control, getValues, setValue } = useFormContext();
   const setList = getValues(`sets.${index}.setList`);
+  const {
+    selectedWeightData,
+    setSelectedWeightData,
+    deleteSelectedWeightData,
+  } = useSelectedWeightDataStore();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -61,14 +69,25 @@ export default function DraggableExerciseCard({
     }
   };
 
+  const router = useRouter();
+
   const handleChangeExercise = () => {
+    router.push(`/write/weight/replace?exercise=${item.exerciseName}`);
     setMenuOpen(false);
-    // TODO: 운동 바꾸기 모달 띄우기
   };
 
   const handleDeleteExercise = () => {
-    setMenuOpen(false);
-    // TODO: 운동 삭제 로직
+    // selectedWeightData에서도 해당 운동 삭제
+    deleteSelectedWeightData(item.exerciseName);
+
+    // sets에서도 해당 운동 삭제
+    const sets = getValues("sets");
+    console.log(sets);
+    const newSets = sets.filter((_: any, idx: number) => idx !== index);
+    setValue("sets", newSets);
+    console.log(newSets);
+
+    // setMenuOpen(false);
   };
 
   if (isReorderMode) {
@@ -94,8 +113,11 @@ export default function DraggableExerciseCard({
   }
 
   return (
-    <div className="bg-fill-neutral-white rounded-xl px-4 py-3 shadow-sm border border-line-neutral-secondary transition  max-w-md mx-auto">
-      <div className="flex justify-between items-center mb-2">
+    <div
+      style={provided?.draggableProps.style}
+      className="bg-fill-neutral-white rounded-xl px-4 py-3 shadow-sm border border-line-neutral-secondary transition  max-w-md mx-auto"
+    >
+      <div className="flex justify-between items-center mb-2 w-full">
         <div
           className="mr-3 cursor-grab"
           onPointerDown={onMoveHandlePointerDown}
@@ -104,26 +126,18 @@ export default function DraggableExerciseCard({
         >
           <MoveHandle />
         </div>
-        <div className="relative" ref={menuRef}>
-          <button onClick={() => setMenuOpen((v) => !v)}>
-            <DotMenu />
-          </button>
-          {menuOpen && (
-            <div className="absolute right-0 mt-2 w-32 bg-white border rounded-lg shadow-lg z-10">
-              <button
-                className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                onClick={handleChangeExercise}
-              >
-                운동 바꾸기
-              </button>
-              <button
-                className="block w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100"
-                onClick={handleDeleteExercise}
-              >
-                운동 지우기
-              </button>
-            </div>
-          )}
+        <div
+          className="flex justify-end items-center"
+          onClick={() => setMenuOpen((v) => !v)}
+        >
+          <DotMenu />
+          <ExerciseCardMenu
+            menuOpen={menuOpen}
+            setMenuOpen={setMenuOpen}
+            menuRef={menuRef}
+            onChangeExercise={handleChangeExercise}
+            onDeleteExercise={handleDeleteExercise}
+          />
         </div>
       </div>
       <span className="font-semibold text-button-l flex-1">

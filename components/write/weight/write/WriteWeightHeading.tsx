@@ -32,7 +32,8 @@ function convertToExerciseItemWithSetInfo(
 }
 
 export default function WriteWeightHeading() {
-  const { selectedWeightData } = useSelectedWeightDataStore();
+  const { selectedWeightData, setSelectedWeightData } =
+    useSelectedWeightDataStore();
   const [isReorderMode, setIsReorderMode] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -54,6 +55,15 @@ export default function WriteWeightHeading() {
     const [removed] = newSets.splice(result.source.index, 1);
     newSets.splice(result.destination.index, 0, removed);
     setValue("sets", newSets);
+
+    // Update selectedWeightDataStore with new order
+    const newSelectedWeightData = Array.from(selectedWeightData);
+    const [removedExercise] = newSelectedWeightData.splice(
+      result.source.index,
+      1
+    );
+    newSelectedWeightData.splice(result.destination.index, 0, removedExercise);
+    setSelectedWeightData(newSelectedWeightData);
   };
 
   // MoveHandle long-press 이벤트 핸들러를 카드에 내려줌
@@ -100,16 +110,20 @@ export default function WriteWeightHeading() {
             </div>
           )}
           <div className="max-w-md p-6">
-            {isReorderMode ? (
-              <DragDropContext onDragEnd={onDragEnd}>
-                <Droppable droppableId="exercise-list">
-                  {(provided) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className="space-y-3"
-                    >
-                      {sets.map((item, idx) => (
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="exercise-list">
+                {(provided) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className="space-y-3"
+                  >
+                    {sets.length === 0 ? (
+                      <div className="text-center text-gray-400 py-8">
+                        운동을 추가해보세요!
+                      </div>
+                    ) : (
+                      sets.map((item, idx) => (
                         <Draggable
                           key={item.itemId}
                           draggableId={item.itemId}
@@ -130,27 +144,13 @@ export default function WriteWeightHeading() {
                             />
                           )}
                         </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
-            ) : (
-              <div className="space-y-3">
-                {sets.map((item, idx) => (
-                  <DraggableExerciseCard
-                    key={item.itemId}
-                    item={item}
-                    index={idx}
-                    isReorderMode={isReorderMode}
-                    onMoveHandlePointerDown={handleMoveHandlePointerDown}
-                    onMoveHandlePointerUp={handleMoveHandlePointerUp}
-                    onCancelReorderMode={handleCancelReorderMode}
-                  />
-                ))}
-              </div>
-            )}
+                      ))
+                    )}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
           </div>
           <div className="flex justify-center items-center gap-2 mb-4">
             <span className="text-text-neutral-tertiary text-button-m font-semibold">

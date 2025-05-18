@@ -4,6 +4,7 @@ import { RefCallback } from "react";
 import EditPopOver from "../../button/EditPopOver";
 
 interface Props {
+  isReplace: boolean;
   exercises: IExerciseItem[];
   selectedV: IExerciseItem[]; // ← 배열
   selectExercise: (ex: IExerciseItem) => void; // ← 함수 시그니처
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function WeightItems({
+  isReplace,
   exercises,
   selectedV,
   selectExercise,
@@ -26,7 +28,9 @@ export default function WeightItems({
   if (isLoading) {
     return (
       <div className="w-full h-full flex flex-col justify-center items-center space-y-4">
-        <span className="text-text-neutral-secondary text-body-m">불러오는 중...</span>
+        <span className="text-text-neutral-secondary text-body-m">
+          불러오는 중...
+        </span>
       </div>
     );
   }
@@ -34,7 +38,9 @@ export default function WeightItems({
   if (exercises.length === 0) {
     return (
       <div className="w-full h-full flex flex-col justify-center items-center space-y-4">
-        <span className="text-text-neutral-tertiary text-body-m">검색어와 일치하는 운동이 없어요.</span>
+        <span className="text-text-neutral-tertiary text-body-m">
+          검색어와 일치하는 운동이 없어요.
+        </span>
         <div
           onClick={onOpen}
           className="h-10 px-4 flex justify-center items-center bg-button-fill-brand-default text-button-text-neutral-white rounded-xl text-button-l font-semibold"
@@ -76,9 +82,15 @@ export default function WeightItems({
 
             {/* 선택된 순서대로 번호 표시 */}
             {isSelected ? (
-              <div className="w-6 h-6 flex items-center justify-center rounded-full bg-button-fill-brand-default text-button-text-neutral-white font-semibold text-sm">
-                {selectedIndex + 1}
-              </div>
+              isReplace ? (
+                <div className="w-6 h-6 flex items-center justify-center ">
+                  <Check />
+                </div>
+              ) : (
+                <div className="w-6 h-6 flex items-center justify-center rounded-full bg-button-fill-brand-default text-button-text-neutral-white font-semibold text-sm">
+                  {selectedIndex + 1}
+                </div>
+              )
             ) : (
               exercise.isUserCreated && <EditPopOver target={exercise} />
             )}
@@ -86,7 +98,11 @@ export default function WeightItems({
         );
       })}
 
-      {isFetchingNextPage && <div className="text-center p-4 text-sm text-gray-500">불러오는 중...</div>}
+      {isFetchingNextPage && (
+        <div className="text-center p-4 text-sm text-gray-500">
+          불러오는 중...
+        </div>
+      )}
     </div>
   );
 }
