@@ -1,5 +1,6 @@
 import WriteNavigationBar from "@/components/write/navigationbar/WriteNavigationBar";
 import WriteWeightHeading from "@/components/write/weight/write/WriteWeightHeading";
+import NextButton from "@/components/write/weight/write/NextButton";
 import { ExerciseTypeEnum } from "@/types/write";
 
 export default function WeightAddPg() {

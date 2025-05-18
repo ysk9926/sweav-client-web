@@ -1,77 +1,135 @@
 import MoveHandle from "@/shared/icons/MoveHandle";
 import { ExerciseItemWithSetInfo, SetInfo } from "./types";
-import { useState } from "react";
 import DotMenu from "@/shared/icons/DotMenu";
+import ReorderSimpleCard from "./ReorderSimpleCard";
+import { useFormContext, Controller } from "react-hook-form";
+import { useState, useRef, useEffect } from "react";
 
 interface DraggableExerciseCardProps {
   item: ExerciseItemWithSetInfo;
-  provided: any;
-  snapshot: any;
+  index: number;
+  provided?: any;
+  snapshot?: any;
+  isReorderMode?: boolean;
+  onMoveHandlePointerDown?: () => void;
+  onMoveHandlePointerUp?: () => void;
+  onCancelReorderMode?: () => void;
 }
 
 export default function DraggableExerciseCard({
   item,
+  index,
   provided,
   snapshot,
+  isReorderMode = false,
+  onMoveHandlePointerDown,
+  onMoveHandlePointerUp,
+  onCancelReorderMode,
 }: DraggableExerciseCardProps) {
-  // 초기 세트가 비어있으면 3개의 기본 세트 생성
-  const initialSetList =
-    item.setList.length === 0
-      ? Array(3)
-          .fill(null)
-          .map((_, index) => ({
-            setId: `initial-${index}`,
-            weight: 0,
-            reps: 0,
-          }))
-      : item.setList;
+  const { control, getValues, setValue } = useFormContext();
+  const setList = getValues(`sets.${index}.setList`);
 
-  const [setList, setSetList] = useState<SetInfo[]>(initialSetList);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    if (menuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuOpen]);
 
   const handleAddSet = () => {
     const newSet: SetInfo = {
-      setId: Date.now().toString(), // 임시 ID 생성
+      setId: Date.now().toString(),
       weight: 0,
       reps: 0,
     };
-    setSetList([...setList, newSet]);
+    setValue(`sets.${index}.setList`, [...setList, newSet]);
   };
 
   const handleRemoveSet = () => {
     if (setList.length > 1) {
-      setSetList(setList.slice(0, -1));
+      setValue(`sets.${index}.setList`, setList.slice(0, -1));
     }
   };
 
+  const handleChangeExercise = () => {
+    setMenuOpen(false);
+    // TODO: 운동 바꾸기 모달 띄우기
+  };
+
+  const handleDeleteExercise = () => {
+    setMenuOpen(false);
+    // TODO: 운동 삭제 로직
+  };
+
+  if (isReorderMode) {
+    const compactStyle = provided
+      ? {
+          minHeight: "64px",
+          paddingTop: "12px",
+          paddingBottom: "12px",
+          ...provided.draggableProps.style,
+        }
+      : {};
+    return (
+      <ReorderSimpleCard
+        exerciseName={item.exerciseName}
+        isDragging={snapshot?.isDragging}
+        onMoveHandlePointerDown={onMoveHandlePointerDown}
+        onMoveHandlePointerUp={onMoveHandlePointerUp}
+        onCancelReorderMode={onCancelReorderMode}
+        provided={provided}
+        style={compactStyle}
+      />
+    );
+  }
+
   return (
-    // 카드 전체 컨테이너
-    <div
-      ref={provided.innerRef}
-      {...provided.draggableProps}
-      className={
-        `bg-fill-neutral-white rounded-xl px-4 py-3 shadow-sm border border-line-neutral-secondary transition  max-w-md mx-auto` +
-        (snapshot.isDragging
-          ? " ring-2 ring-brand-default bg-fill-brand-secondary "
-          : "")
-      }
-      style={{ ...provided.draggableProps.style }}
-    >
-      {/* 상단: 드래그 핸들 + 운동명 + 옵션 버튼 */}
+    <div className="bg-fill-neutral-white rounded-xl px-4 py-3 shadow-sm border border-line-neutral-secondary transition  max-w-md mx-auto">
       <div className="flex justify-between items-center mb-2">
-        {/* 드래그 핸들 */}
-        <div {...provided.dragHandleProps} className="mr-3 cursor-grab">
+        <div
+          className="mr-3 cursor-grab"
+          onPointerDown={onMoveHandlePointerDown}
+          onPointerUp={onMoveHandlePointerUp}
+          onPointerLeave={onMoveHandlePointerUp}
+        >
           <MoveHandle />
         </div>
-        {/* 옵션(더보기) 버튼 */}
-        <DotMenu />
+        <div className="relative" ref={menuRef}>
+          <button onClick={() => setMenuOpen((v) => !v)}>
+            <DotMenu />
+          </button>
+          {menuOpen && (
+            <div className="absolute right-0 mt-2 w-32 bg-white border rounded-lg shadow-lg z-10">
+              <button
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                onClick={handleChangeExercise}
+              >
+                운동 바꾸기
+              </button>
+              <button
+                className="block w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100"
+                onClick={handleDeleteExercise}
+              >
+                운동 지우기
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-      {/* 운동명 */}
       <span className="font-semibold text-button-l flex-1">
         {item.exerciseName}
       </span>
-      {/* 세트별 입력 영역 */}
       <div className="w-full rounded-lg p-4 mt-6 text-body-m text-text-neutral-tertiary border-b border-line-neutral-secondary mb-4">
-        {/* 헤더: kg/횟수 */}
         <div className=" grid grid-cols-[40px_1fr_1fr] gap-2 mb-2 text-xs">
           <div></div>
           <div className="flex justify-center items-center text-center">kg</div>
@@ -79,35 +137,45 @@ export default function DraggableExerciseCard({
             횟수
           </div>
         </div>
-        {/* 세트별 입력 필드 */}
-        {setList.map((set, idx) => (
+        {setList.map((set: SetInfo, setIdx: number) => (
           <div
             key={set.setId}
             className=" grid grid-cols-[40px_1fr_1fr] gap-2 mb-2 space-y-1"
           >
-            {/* 세트 번호 */}
             <div className="text-xs text-gray-400 flex items-center">
-              {idx + 1}세트
+              {setIdx + 1}세트
             </div>
-            {/* 무게 입력 */}
             <div className="flex items-center justify-center">
-              <input
-                className="w-full bg-fill-neutral-default px-2 text-center rounded-2xl py-2 text-text-neutral-default font-semibold text-brand-s font-outfit focus:outline-line-brand-default placeholder:text-text-neutral-tertiary placeholder:text-body-m"
-                type="number"
-                placeholder="kg"
+              <Controller
+                name={`sets.${index}.setList.${setIdx}.weight`}
+                control={control}
+                render={({ field }) => (
+                  <input
+                    {...field}
+                    className="w-full bg-fill-neutral-default px-2 text-center rounded-2xl py-2 text-text-neutral-default font-semibold text-brand-s font-outfit focus:outline-line-brand-default placeholder:text-text-neutral-tertiary placeholder:text-body-m"
+                    type="number"
+                    placeholder="kg"
+                  />
+                )}
               />
             </div>
             <div className="flex items-center justify-center">
-              <input
-                className="w-full bg-fill-neutral-default px-2 text-center rounded-2xl py-2 text-text-neutral-default font-semibold text-brand-s font-outfit focus:outline-line-brand-default placeholder:text-text-neutral-tertiary placeholder:text-body-m"
-                type="number"
-                placeholder="횟수"
+              <Controller
+                name={`sets.${index}.setList.${setIdx}.reps`}
+                control={control}
+                render={({ field }) => (
+                  <input
+                    {...field}
+                    className="w-full bg-fill-neutral-default px-2 text-center rounded-2xl py-2 text-text-neutral-default font-semibold text-brand-s font-outfit focus:outline-line-brand-default placeholder:text-text-neutral-tertiary placeholder:text-body-m"
+                    type="number"
+                    placeholder="횟수"
+                  />
+                )}
               />
             </div>
           </div>
         ))}
       </div>
-      {/* 세트 추가/삭제 버튼 */}
       <div className="flex justify-between mt-3 px-2 divide-x-1 divide-line-neutral-secondary">
         <button
           onClick={handleRemoveSet}
@@ -120,7 +188,8 @@ export default function DraggableExerciseCard({
           onClick={handleAddSet}
           className="w-full text-brand-default text-sm flex justify-center items-center text-text-brand-secondary"
         >
-          세트 추가 <span className="ml-2 font-semibold text-lg">+</span>
+          <span className="text-center">세트 추가</span>
+          <span className="ml-2 text-2xl pb-1">+</span>
         </button>
       </div>
     </div>
