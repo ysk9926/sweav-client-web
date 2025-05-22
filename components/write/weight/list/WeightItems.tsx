@@ -4,6 +4,7 @@ import { RefCallback } from "react";
 import EditPopOver from "../../button/EditPopOver";
 
 interface Props {
+  isReplace: boolean;
   exercises: IExerciseItem[];
   selectedV: IExerciseItem[];
   selectExercise: (ex: IExerciseItem) => void;
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export default function WeightItems({
+  isReplace,
   exercises,
   selectedV,
   selectExercise,

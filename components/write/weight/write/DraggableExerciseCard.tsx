@@ -58,7 +58,10 @@ export default function DraggableExerciseCard({
     }
   };
 
+  const router = useRouter();
+
   const handleChangeExercise = () => {
+    router.push(`/write/weight/replace?exercise=${item.exerciseName}`);
     setMenuOpen(false);
     router.push(`/write/weight/change?index=${index}`);
   };

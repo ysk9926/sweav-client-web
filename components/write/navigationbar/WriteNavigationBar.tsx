@@ -11,9 +11,10 @@ import AddWeightModal from "../weight/add/AddWeightModal";
 
 interface IExerciseType {
   type: ExerciseTypeEnum;
+  title?: string;
 }
 
-export default function WriteNavigationBar({ type }: IExerciseType) {
+export default function WriteNavigationBar({ type, title }: IExerciseType) {
   const router = useRouter();
   const { selectedDate } = useSelectedDateStore();
   const { isOpen: cardioIsOpen, onOpen: cardioOnOpen, onOpenChange: cardioOnOpenChange } = useDisclosure();
