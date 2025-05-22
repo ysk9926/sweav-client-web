@@ -1,23 +1,32 @@
-import React from "react";
+"use client";
 
-interface NextButtonProps {
-  onClick?: () => void;
-  isDisabled?: boolean;
+import { useRouter } from "next/navigation";
+
+interface Props {
+  isDisabled: boolean;
 }
 
-export default function NextButton({ onClick, isDisabled }: NextButtonProps) {
+export default function NextButton({ isDisabled }: Props) {
+  const router = useRouter();
+
+  const handleNext = () => {
+    if (!isDisabled) {
+      router.push("/write/weight/time");
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center relative h-32">
-      <div className=" absolute -top-5 h-5 w-full bg-gradient-to-b from-fill-neutral-secondary/0 to-fill-neutral-secondary/100"></div>
+    <div className="sticky bottom-0 w-full p-6 bg-fill-neutral-white border-t border-line-neutral-secondary">
       <button
-        className={`${
-          isDisabled
-            ? "bg-button-fill-disabled-primary"
-            : "bg-button-fill-brand-default"
-        } w-[310px] h-14 px-4 rounded-2xl font-semibold text-button-l text-button-text-neutral-white`}
-        onClick={onClick}
-        type="button"
+        onClick={handleNext}
         disabled={isDisabled}
+        className={`w-full h-14 rounded-2xl font-semibold text-button-l
+          ${
+            !isDisabled
+              ? "bg-button-fill-brand-default text-button-text-neutral-white"
+              : "bg-button-fill-disabled-primary text-button-text-disabled-primary"
+          }
+        `}
       >
         다음
       </button>

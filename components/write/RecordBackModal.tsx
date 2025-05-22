@@ -1,12 +1,14 @@
 "use client";
 
 import { useSelectedCardioDataStore } from "@/stores/selectedCardioDataStore";
+import { useSelectedWeightDataStore } from "@/stores/selectedWeightDataStore";
 import { DefaultModalProps } from "@/types/write";
 import { Modal, ModalContent } from "@heroui/react";
 import { useRouter } from "next/navigation";
 
 export default function RecordBackModal({ isOpen, onOpenChange }: DefaultModalProps) {
   const { resetData } = useSelectedCardioDataStore();
+  const { resetData: resetWeightData } = useSelectedWeightDataStore();
   const router = useRouter();
 
   const goBack = () => {
@@ -20,7 +22,8 @@ export default function RecordBackModal({ isOpen, onOpenChange }: DefaultModalPr
 
   const handleCancle = () => {
     resetData();
-    goBack();
+    resetWeightData();
+    router.push("/write");
   };
 
   return (

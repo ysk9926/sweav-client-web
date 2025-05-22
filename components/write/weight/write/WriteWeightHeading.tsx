@@ -2,22 +2,15 @@
 
 import { useSelectedWeightDataStore } from "@/stores/selectedWeightDataStore";
 import { IExerciseItem } from "@/types/write";
-import { useState, useEffect, useRef } from "react";
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-  DropResult,
-} from "@hello-pangea/dnd";
+import { useState, useRef } from "react";
+import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import DraggableExerciseCard from "./DraggableExerciseCard";
 import { ExerciseItemWithSetInfo } from "./types";
 import NextButton from "./NextButton";
 import { useForm, FormProvider } from "react-hook-form";
 import PlusIcon from "@/shared/icons/PlusIcon";
 
-function convertToExerciseItemWithSetInfo(
-  items: IExerciseItem[]
-): ExerciseItemWithSetInfo[] {
+function convertToExerciseItemWithSetInfo(items: IExerciseItem[]): ExerciseItemWithSetInfo[] {
   return items.map((item) => ({
     itemId: item.id.toString(),
     exerciseName: item.name,
@@ -32,9 +25,8 @@ function convertToExerciseItemWithSetInfo(
 }
 
 export default function WriteWeightHeading() {
-  const { selectedWeightData } = useSelectedWeightDataStore();
+  const { selectedWeightData, reorderSelectedWeightData } = useSelectedWeightDataStore();
   const [isReorderMode, setIsReorderMode] = useState(false);
-  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
   // react-hook-form setup
   const defaultValues = {
@@ -47,119 +39,81 @@ export default function WriteWeightHeading() {
   const { watch, setValue } = methods;
   const sets = watch("sets");
 
+  // 모든 운동의 weight, reps가 0이 아닌지 확인하는 함수
+  const isAllExercisesValid = () => {
+    return sets.every((exercise) => exercise.setList.every((set) => set.weight > 0 && set.reps > 0));
+  };
+
   // DnD 완료 시 순서 변경
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
+
+    // form 데이터 업데이트
     const newSets = Array.from(sets);
     const [removed] = newSets.splice(result.source.index, 1);
     newSets.splice(result.destination.index, 0, removed);
     setValue("sets", newSets);
-  };
 
-  // MoveHandle long-press 이벤트 핸들러를 카드에 내려줌
-  const handleMoveHandlePointerDown = () => {
-    if (!isReorderMode) {
-      longPressTimer.current = setTimeout(() => {
-        setIsReorderMode(true);
-      }, 500); // 0.5초 이상 누르면 진입
-    }
+    // store 데이터 업데이트
+    reorderSelectedWeightData(result.source.index, result.destination.index);
   };
-  const handleMoveHandlePointerUp = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  };
-  const handleCancelReorderMode = () => {
-    setIsReorderMode(false);
-  };
-
-  // 모든 세트 필드가 채워져 있는지 검사
-  const allFilled = Array.isArray(sets)
-    ? sets.every((item) =>
-        item.setList.every(
-          (set) =>
-            set.weight !== null &&
-            set.weight !== undefined &&
-            !Number.isNaN(set.weight) &&
-            set.reps !== null &&
-            set.reps !== undefined &&
-            !Number.isNaN(set.reps)
-        )
-      )
-    : false;
 
   return (
     <FormProvider {...methods}>
       <div className="h-full flex flex-col justify-between min-h-0 bg-fill-neutral-secondary">
-        <div className="h-full overflow-auto min-h-0  relative">
-          {/* 상단 알람 */}
-          {isReorderMode && (
-            <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-fill-neutral-white text-text-neutral-tertiary text-center px-4 py-2 rounded-lg shadow z-50">
-              순서변경모드입니다
+        <div className="h-full overflow-auto min-h-0 relative">
+          {/* 헤더 */}
+          <div className="sticky top-0 z-10 bg-fill-neutral-secondary">
+            <div className="flex items-center justify-between px-6 py-3">
+              <div className="flex items-center justify-center text-text-neutral-default">
+                <span className=" font-outfit font-semibold text-brand-m">{selectedWeightData.length}</span>
+                <span className=" font-semibold text-heading-s">종목</span>
+              </div>
+              <button
+                onClick={() => setIsReorderMode(!isReorderMode)}
+                className={`px-4 py-2 rounded-xl text-sm ${
+                  isReorderMode
+                    ? "bg-button-fill-brand-secondary text-button-fill-brand-default border border-line-brand-default"
+                    : "bg-button-fill-neutral-white text-text-neutral-tertiary"
+                }`}
+              >
+                {isReorderMode ? "변경 완료" : "순서 변경"}
+              </button>
+            </div>
+          </div>
+
+          <div className="max-w-md p-6">
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="exercise-list">
+                {(provided) => (
+                  <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-3">
+                    {sets.map((item, idx) => (
+                      <Draggable key={item.itemId} draggableId={item.itemId} index={idx}>
+                        {(provided, snapshot) => (
+                          <DraggableExerciseCard
+                            item={item}
+                            index={idx}
+                            provided={provided}
+                            snapshot={snapshot}
+                            isReorderMode={isReorderMode}
+                          />
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </div>
+          {isReorderMode ? null : (
+            <div className="flex justify-center items-center gap-2 mb-4">
+              <span className="text-text-neutral-tertiary text-button-m font-semibold">운동 추가하기</span>
+              <PlusIcon color="#bbbab7" />
             </div>
           )}
-          <div className="max-w-md p-6">
-            {isReorderMode ? (
-              <DragDropContext onDragEnd={onDragEnd}>
-                <Droppable droppableId="exercise-list">
-                  {(provided) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className="space-y-3"
-                    >
-                      {sets.map((item, idx) => (
-                        <Draggable
-                          key={item.itemId}
-                          draggableId={item.itemId}
-                          index={idx}
-                        >
-                          {(provided, snapshot) => (
-                            <DraggableExerciseCard
-                              item={item}
-                              index={idx}
-                              provided={provided}
-                              snapshot={snapshot}
-                              isReorderMode={isReorderMode}
-                              onMoveHandlePointerDown={
-                                handleMoveHandlePointerDown
-                              }
-                              onMoveHandlePointerUp={handleMoveHandlePointerUp}
-                              onCancelReorderMode={handleCancelReorderMode}
-                            />
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
-            ) : (
-              <div className="space-y-3">
-                {sets.map((item, idx) => (
-                  <DraggableExerciseCard
-                    key={item.itemId}
-                    item={item}
-                    index={idx}
-                    isReorderMode={isReorderMode}
-                    onMoveHandlePointerDown={handleMoveHandlePointerDown}
-                    onMoveHandlePointerUp={handleMoveHandlePointerUp}
-                    onCancelReorderMode={handleCancelReorderMode}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="flex justify-center items-center gap-2 mb-4">
-            <span className="text-text-neutral-tertiary text-button-m font-semibold">
-              운동 추가하기
-            </span>
-            <PlusIcon color="#bbbab7" />
-          </div>
         </div>
-        <NextButton isDisabled={isReorderMode} />
+        <NextButton isDisabled={isReorderMode || !isAllExercisesValid()} />
       </div>
     </FormProvider>
   );

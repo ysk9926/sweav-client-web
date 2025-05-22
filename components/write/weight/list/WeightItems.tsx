@@ -5,13 +5,14 @@ import EditPopOver from "../../button/EditPopOver";
 
 interface Props {
   exercises: IExerciseItem[];
-  selectedV: IExerciseItem[]; // ← 배열
-  selectExercise: (ex: IExerciseItem) => void; // ← 함수 시그니처
-  onOpen: () => void;
+  selectedV: IExerciseItem[];
+  selectExercise: (ex: IExerciseItem) => void;
+  onOpen?: () => void;
   isFetchingNextPage: boolean;
   hasNextPage?: boolean;
   observerRef: (node: HTMLElement) => void;
   isLoading: boolean;
+  isChangeMode?: boolean;
 }
 
 export default function WeightItems({
@@ -22,6 +23,7 @@ export default function WeightItems({
   isFetchingNextPage,
   observerRef,
   isLoading,
+  isChangeMode = false,
 }: Props) {
   if (isLoading) {
     return (
@@ -74,14 +76,18 @@ export default function WeightItems({
               {exercise.name}
             </span>
 
-            {/* 선택된 순서대로 번호 표시 */}
-            {isSelected ? (
-              <div className="w-6 h-6 flex items-center justify-center rounded-full bg-button-fill-brand-default text-button-text-neutral-white font-semibold text-sm">
-                {selectedIndex + 1}
-              </div>
-            ) : (
-              exercise.isUserCreated && <EditPopOver target={exercise} />
-            )}
+            {/* 선택 표시 - 모드에 따라 다르게 표시 */}
+            {isSelected &&
+              (isChangeMode ? (
+                <div className="w-6 h-6 flex items-center justify-center">
+                  <Check />
+                </div>
+              ) : (
+                <div className="w-6 h-6 flex items-center justify-center rounded-full bg-button-fill-brand-default text-button-text-neutral-white font-semibold text-sm">
+                  {selectedIndex + 1}
+                </div>
+              ))}
+            {!isSelected && exercise.isUserCreated && <EditPopOver target={exercise} />}
           </div>
         );
       })}

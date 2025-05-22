@@ -27,7 +27,7 @@ export default function WriteNavigationBar({ type }: IExerciseType) {
       <div className="w-6" onClick={router.back}>
         <ArrowBack />
       </div>
-      <span className="text-text-neutral-default font-semibold text-heading-xs">{`${selectedDate.month}월 ${selectedDate.day}일 운동 기록`}</span>
+      <span className="text-text-neutral-default font-semibold text-heading-xs">운동 종목 선택</span>
       <div onClick={modalOpenHandler} className="w-6">
         <PlusIcon />
       </div>

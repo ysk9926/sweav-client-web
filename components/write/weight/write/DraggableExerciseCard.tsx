@@ -4,6 +4,8 @@ import DotMenu from "@/shared/icons/DotMenu";
 import ReorderSimpleCard from "./ReorderSimpleCard";
 import { useFormContext, Controller } from "react-hook-form";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSelectedWeightDataStore } from "@/stores/selectedWeightDataStore";
 
 interface DraggableExerciseCardProps {
   item: ExerciseItemWithSetInfo;
@@ -11,23 +13,18 @@ interface DraggableExerciseCardProps {
   provided?: any;
   snapshot?: any;
   isReorderMode?: boolean;
-  onMoveHandlePointerDown?: () => void;
-  onMoveHandlePointerUp?: () => void;
-  onCancelReorderMode?: () => void;
 }
 
 export default function DraggableExerciseCard({
   item,
   index,
   provided,
-  snapshot,
   isReorderMode = false,
-  onMoveHandlePointerDown,
-  onMoveHandlePointerUp,
-  onCancelReorderMode,
 }: DraggableExerciseCardProps) {
   const { control, getValues, setValue } = useFormContext();
   const setList = getValues(`sets.${index}.setList`);
+  const router = useRouter();
+  const { selectedWeightData, setSelectedWeightData } = useSelectedWeightDataStore();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -63,57 +60,51 @@ export default function DraggableExerciseCard({
 
   const handleChangeExercise = () => {
     setMenuOpen(false);
-    // TODO: 운동 바꾸기 모달 띄우기
+    router.push(`/write/weight/change?index=${index}`);
   };
 
   const handleDeleteExercise = () => {
     setMenuOpen(false);
-    // TODO: 운동 삭제 로직
+
+    // 선택된 운동 목록에서 해당 운동 제거
+    const newWeightData = [...selectedWeightData];
+    newWeightData.splice(index, 1);
+    setSelectedWeightData(newWeightData);
+
+    // form 데이터에서 해당 운동의 세트 정보 제거
+    const currentSets = getValues("sets");
+    const newSets = [...currentSets];
+    newSets.splice(index, 1);
+    setValue("sets", newSets);
   };
 
   if (isReorderMode) {
-    const compactStyle = provided
-      ? {
-          minHeight: "64px",
-          paddingTop: "12px",
-          paddingBottom: "12px",
-          ...provided.draggableProps.style,
-        }
-      : {};
     return (
-      <ReorderSimpleCard
-        exerciseName={item.exerciseName}
-        isDragging={snapshot?.isDragging}
-        onMoveHandlePointerDown={onMoveHandlePointerDown}
-        onMoveHandlePointerUp={onMoveHandlePointerUp}
-        onCancelReorderMode={onCancelReorderMode}
-        provided={provided}
-        style={compactStyle}
-      />
+      <div
+        ref={provided?.innerRef}
+        {...provided?.draggableProps}
+        {...provided?.dragHandleProps}
+        className="bg-fill-neutral-white rounded-xl px-4 py-6 shadow-sm border border-line-neutral-secondary transition max-w-md mx-auto"
+      >
+        <div className="flex items-center gap-3">
+          <MoveHandle />
+          <span className="font-semibold text-button-l text-text-neutral-default">{item.exerciseName}</span>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="bg-fill-neutral-white rounded-xl px-4 py-3 shadow-sm border border-line-neutral-secondary transition  max-w-md mx-auto">
+    <div className="bg-fill-neutral-white rounded-xl px-4 py-3 shadow-sm border border-line-neutral-secondary transition max-w-md mx-auto">
       <div className="flex justify-between items-center mb-2">
-        <div
-          className="mr-3 cursor-grab"
-          onPointerDown={onMoveHandlePointerDown}
-          onPointerUp={onMoveHandlePointerUp}
-          onPointerLeave={onMoveHandlePointerUp}
-        >
-          <MoveHandle />
-        </div>
+        <span className="font-semibold text-button-l flex-1">{item.exerciseName}</span>
         <div className="relative" ref={menuRef}>
           <button onClick={() => setMenuOpen((v) => !v)}>
             <DotMenu />
           </button>
           {menuOpen && (
             <div className="absolute right-0 mt-2 w-32 bg-white border rounded-lg shadow-lg z-10">
-              <button
-                className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                onClick={handleChangeExercise}
-              >
+              <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={handleChangeExercise}>
                 운동 바꾸기
               </button>
               <button
@@ -126,25 +117,15 @@ export default function DraggableExerciseCard({
           )}
         </div>
       </div>
-      <span className="font-semibold text-button-l flex-1">
-        {item.exerciseName}
-      </span>
       <div className="w-full rounded-lg p-4 mt-6 text-body-m text-text-neutral-tertiary border-b border-line-neutral-secondary mb-4">
-        <div className=" grid grid-cols-[40px_1fr_1fr] gap-2 mb-2 text-xs">
+        <div className="grid grid-cols-[40px_1fr_1fr] gap-2 mb-2 text-xs">
           <div></div>
           <div className="flex justify-center items-center text-center">kg</div>
-          <div className="flex justify-center items-center text-center">
-            횟수
-          </div>
+          <div className="flex justify-center items-center text-center">횟수</div>
         </div>
         {setList.map((set: SetInfo, setIdx: number) => (
-          <div
-            key={set.setId}
-            className=" grid grid-cols-[40px_1fr_1fr] gap-2 mb-2 space-y-1"
-          >
-            <div className="text-xs text-gray-400 flex items-center">
-              {setIdx + 1}세트
-            </div>
+          <div key={set.setId} className="grid grid-cols-[40px_1fr_1fr] gap-2 mb-2 space-y-1">
+            <div className="text-xs text-gray-400 flex items-center">{setIdx + 1}세트</div>
             <div className="flex items-center justify-center">
               <Controller
                 name={`sets.${index}.setList.${setIdx}.weight`}

@@ -15,7 +15,7 @@ export default function RecordNavigationBar() {
       <div className="w-6" onClick={router.back}>
         <ArrowBack />
       </div>
-      <span className="text-text-neutral-default font-semibold text-heading-xs">{`${selectedDate.month}월 ${selectedDate.day}일 운동 기록`}</span>
+      <span className="text-text-neutral-default font-semibold text-heading-xs">운동 기록</span>
       <div onClick={onOpen} className="w-7 text-[14px] text-text-neutral-tertiary">
         취소
       </div>
