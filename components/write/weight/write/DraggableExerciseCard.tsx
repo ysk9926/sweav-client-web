@@ -1,7 +1,6 @@
 import MoveHandle from "@/shared/icons/MoveHandle";
 import { ExerciseItemWithSetInfo, SetInfo } from "./types";
 import DotMenu from "@/shared/icons/DotMenu";
-import ReorderSimpleCard from "./ReorderSimpleCard";
 import { useFormContext, Controller } from "react-hook-form";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -58,11 +57,7 @@ export default function DraggableExerciseCard({
     }
   };
 
-  const router = useRouter();
-
   const handleChangeExercise = () => {
-    router.push(`/write/weight/replace?exercise=${item.exerciseName}`);
-    setMenuOpen(false);
     router.push(`/write/weight/change?index=${index}`);
   };
 
