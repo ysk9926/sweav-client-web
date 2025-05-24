@@ -1,16 +1,11 @@
 import ExerciseChoiceBtn from "@/components/write/button/ExerciseChoiceBtn";
 import ExerciseSelectNavigationBar from "@/components/write/navigationbar/ExerciseSelectNavigationBar";
+import { ExercisePageProps } from "@/app/exercise/[date]/page";
 import Cardio from "@/shared/icons/Cardio";
 import WeightExcercise from "@/shared/icons/WeightExcrecise";
 import { notFound } from "next/navigation";
 
-interface PageProps {
-  params: {
-    date: string;
-  };
-}
-
-export default function Write({ params }: PageProps) {
+export default function Write({ params }: ExercisePageProps) {
   const { date } = params;
 
   // 날짜 형식 검증 (yyyy-mm-dd)

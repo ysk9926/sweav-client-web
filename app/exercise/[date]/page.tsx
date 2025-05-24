@@ -7,13 +7,13 @@ import { exerciseGroupMock } from "@/app/exercise/components/mock/exerciseMock";
 import PlusIcon from "@/shared/icons/PlusIcon";
 import { useRouter } from "next/navigation";
 
-interface PageProps {
+export interface ExercisePageProps {
   params: {
     date: string;
   };
 }
 
-export default function ExercisePage({ params }: PageProps) {
+export default function ExercisePage({ params }: ExercisePageProps) {
   const router = useRouter();
   const { date } = params;
   const accessToken = useAccessToken();

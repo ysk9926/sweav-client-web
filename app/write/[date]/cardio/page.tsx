@@ -1,14 +1,9 @@
 import CardioListItems from "@/components/write/addCardio/CaldioList";
 import WriteNavigationBar from "@/components/write/navigationbar/WriteNavigationBar";
 import { ExerciseTypeEnum } from "@/types/write";
+import { ExercisePageProps } from "@/app/exercise/[date]/page";
 
-interface PageProps {
-  params: {
-    date: string;
-  };
-}
-
-export default function Carodio({ params }: PageProps) {
+export default function Carodio({ params }: ExercisePageProps) {
   const { date } = params;
   return (
     <div className="grid grid-rows-[4rem_1fr] h-dvh w-dvw">

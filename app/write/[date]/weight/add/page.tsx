@@ -1,13 +1,8 @@
 import WriteWeightHeading from "@/components/write/weight/write/WriteWeightHeading";
 import RecordNavigationBar from "@/components/write/navigationbar/RecordNavigationBar";
+import { ExercisePageProps } from "@/app/exercise/[date]/page";
 
-interface PageProps {
-  params: {
-    date: string;
-  };
-}
-
-export default function WeightAddPg({ params }: PageProps) {
+export default function WeightAddPg({ params }: ExercisePageProps) {
   const { date } = params;
   return (
     <div className="h-dvh w-dvw grid grid-rows-[4rem_1fr]">
