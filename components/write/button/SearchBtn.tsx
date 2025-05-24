@@ -3,7 +3,7 @@
 import Search from "@/shared/icons/Search";
 import { useExerciseSearchDataStore } from "@/stores/exerciseSearchDataStore";
 import DeleteBtn from "../../../shared/icons/DeleteBtn";
-import { ExerciseSearchData, SearchBtnProps } from "@/types/write";
+import { SearchBtnProps } from "@/types/write";
 
 export default function SearchBtn({
   searchInputData,

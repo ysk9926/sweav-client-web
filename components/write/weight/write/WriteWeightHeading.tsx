@@ -142,7 +142,10 @@ export default function WriteWeightHeading({ date }: { date: string }) {
             </div>
           )}
         </div>
-        <NextButton isDisabled={isReorderMode || !isAllExercisesValid()} />
+        <NextButton
+          isDisabled={isReorderMode || !isAllExercisesValid()}
+          date={date}
+        />
       </div>
     </FormProvider>
   );

@@ -2,7 +2,7 @@
 
 import { useSelectedWeightDataStore } from "@/stores/selectedWeightDataStore";
 import { IExerciseItem } from "@/types/write";
-import { notFound, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface Props {
   selectedV: IExerciseItem[];

@@ -1,10 +1,7 @@
 "use client";
 
-import { setCookie, TokenStorageKey } from "@/components/hook/setCookie";
 import ArrowBack from "@/shared/icons/ArrowBack";
-import { useSelectedDateStore } from "@/stores/selectedDateStore";
 import { notFound } from "next/navigation";
-import { useEffect } from "react";
 
 export default function ExerciseSelectNavigationBar({
   date,

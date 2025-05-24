@@ -2,16 +2,17 @@
 
 import { useRouter } from "next/navigation";
 
-interface Props {
+interface NextButtonProps {
   isDisabled: boolean;
+  date: string;
 }
 
-export default function NextButton({ isDisabled }: Props) {
+export default function NextButton({ isDisabled, date }: NextButtonProps) {
   const router = useRouter();
 
   const handleNext = () => {
     if (!isDisabled) {
-      router.push("/write/weight/time");
+      router.push(`/write/${date}/weight/time`);
     }
   };
 
