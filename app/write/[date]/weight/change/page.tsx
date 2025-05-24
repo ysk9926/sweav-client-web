@@ -1,9 +1,11 @@
 "use client";
 
-import { useIsShortViewportHeight } from "@/components/hook/useIsShortHeight";
-import { useExerciseSearchDataStore } from "@/stores/exerciseSearchDataStore";
 import { useSelectedWeightDataStore } from "@/stores/selectedWeightDataStore";
-import { ExercisePart, ExerciseSearchInputForm, ExerciseTypeEnum, IExerciseItem } from "@/types/write";
+import {
+  ExercisePart,
+  ExerciseSearchInputForm,
+  IExerciseItem,
+} from "@/types/write";
 import { useForm } from "react-hook-form";
 import ExerciseSearchInput from "@/components/write/ExerciseSearchInput";
 import { useState, useEffect } from "react";
@@ -27,7 +29,6 @@ export default function ChangeExercisePage() {
     defaultValues: { searchItem: "" },
   });
   const searchInputData = watch("searchItem");
-  const { exerciseSearchData } = useExerciseSearchDataStore();
 
   // 부위 필터링
   const [part, setPart] = useState<ExercisePart>("ALL");
@@ -50,7 +51,8 @@ export default function ChangeExercisePage() {
   });
 
   // 운동 선택
-  const { selectedWeightData, setSelectedWeightData } = useSelectedWeightDataStore();
+  const { selectedWeightData, setSelectedWeightData } =
+    useSelectedWeightDataStore();
   const [selectedV, setSelectedV] = useState<IExerciseItem[]>([]);
 
   // 현재 선택된 운동을 초기값으로 설정
@@ -73,7 +75,11 @@ export default function ChangeExercisePage() {
     }
   };
 
-  const { isOpen: weightIsOpen, onOpen: weightOnOpen, onOpenChange: weightOnOpenChange } = useDisclosure();
+  const {
+    isOpen: weightIsOpen,
+    onOpen: weightOnOpen,
+    onOpenChange: weightOnOpenChange,
+  } = useDisclosure();
 
   const modalOpenHandler = () => {
     weightOnOpen();
@@ -92,14 +98,21 @@ export default function ChangeExercisePage() {
             <div onClick={modalOpenHandler} className="w-6">
               <PlusIcon />
             </div>
-            <AddWeightModal isOpen={weightIsOpen} onOpenChange={weightOnOpenChange} />
+            <AddWeightModal
+              isOpen={weightIsOpen}
+              onOpenChange={weightOnOpenChange}
+            />
           </div>
         </div>
       </div>
 
       {/* 본문 */}
       <div className="flex-1 flex flex-col min-h-0 pt-2">
-        <ExerciseSearchInput setValue={setValue} register={register} searchInputData={searchInputData} />
+        <ExerciseSearchInput
+          setValue={setValue}
+          register={register}
+          searchInputData={searchInputData}
+        />
         <PartFilter selectedPart={part} setSelectedPart={setPart} />
         <WeightItems
           exercises={exerciseList}
@@ -119,7 +132,9 @@ export default function ChangeExercisePage() {
         <button
           onClick={handleChangeExercise}
           className={`${
-            selectedV.length === 1 ? "bg-button-fill-brand-default" : "bg-button-fill-disabled-primary"
+            selectedV.length === 1
+              ? "bg-button-fill-brand-default"
+              : "bg-button-fill-disabled-primary"
           } w-[310px] h-14 px-4 rounded-2xl font-semibold text-button-l text-button-text-neutral-white`}
         >
           선택

@@ -1,8 +1,7 @@
 "use client";
 
-import { useSelectedCardioDataStore } from "@/stores/selectedCardioDataStore";
-import { SelectBtnProps, unSelectedExercise } from "@/types/write";
-import { notFound, useRouter } from "next/navigation";
+import { SelectBtnProps } from "@/types/write";
+import { useRouter } from "next/navigation";
 
 interface Props extends SelectBtnProps {
   date: string;

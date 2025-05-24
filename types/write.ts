@@ -94,9 +94,6 @@ export interface SearchInputProps {
 export interface SelectBtnProps {
   selectedV: IExerciseItem;
   isShort: boolean;
-  params: {
-    date: string;
-  };
 }
 
 export interface IExerciseSearchReq {
