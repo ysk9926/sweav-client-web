@@ -8,15 +8,18 @@ type SelectedWeightDataStore = {
   resetData: () => void;
 };
 
-export const useSelectedWeightDataStore = create<SelectedWeightDataStore>((set) => ({
-  selectedWeightData: [],
-  setSelectedWeightData: (selectedData) => set({ selectedWeightData: selectedData }),
-  resetData: () => set({ selectedWeightData: [] }),
-  reorderSelectedWeightData: (startIndex, endIndex) =>
-    set((state) => {
-      const newData = [...state.selectedWeightData];
-      const [removed] = newData.splice(startIndex, 1);
-      newData.splice(endIndex, 0, removed);
-      return { selectedWeightData: newData };
-    }),
-}));
+export const useSelectedWeightDataStore = create<SelectedWeightDataStore>(
+  (set) => ({
+    selectedWeightData: [],
+    setSelectedWeightData: (selectedData) =>
+      set({ selectedWeightData: selectedData }),
+    resetData: () => set({ selectedWeightData: [] }),
+    reorderSelectedWeightData: (startIndex, endIndex) =>
+      set((state) => {
+        const newData = [...state.selectedWeightData];
+        const [removed] = newData.splice(startIndex, 1);
+        newData.splice(endIndex, 0, removed);
+        return { selectedWeightData: newData };
+      }),
+  })
+);

@@ -12,6 +12,7 @@ interface DraggableExerciseCardProps {
   provided?: any;
   snapshot?: any;
   isReorderMode?: boolean;
+  date: string;
 }
 
 export default function DraggableExerciseCard({
@@ -19,11 +20,13 @@ export default function DraggableExerciseCard({
   index,
   provided,
   isReorderMode = false,
+  date,
 }: DraggableExerciseCardProps) {
   const { control, getValues, setValue } = useFormContext();
   const setList = getValues(`sets.${index}.setList`);
   const router = useRouter();
-  const { selectedWeightData, setSelectedWeightData } = useSelectedWeightDataStore();
+  const { selectedWeightData, setSelectedWeightData } =
+    useSelectedWeightDataStore();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -58,7 +61,7 @@ export default function DraggableExerciseCard({
   };
 
   const handleChangeExercise = () => {
-    router.push(`/write/weight/change?index=${index}`);
+    router.push(`/write/${date}/weight/change?index=${index}`);
   };
 
   const handleDeleteExercise = () => {
@@ -86,7 +89,9 @@ export default function DraggableExerciseCard({
       >
         <div className="flex items-center gap-3">
           <MoveHandle />
-          <span className="font-semibold text-button-l text-text-neutral-default">{item.exerciseName}</span>
+          <span className="font-semibold text-button-l text-text-neutral-default">
+            {item.exerciseName}
+          </span>
         </div>
       </div>
     );
@@ -95,14 +100,19 @@ export default function DraggableExerciseCard({
   return (
     <div className="bg-fill-neutral-white rounded-xl px-4 py-3 shadow-sm border border-line-neutral-secondary transition max-w-md mx-auto">
       <div className="flex justify-between items-center mb-2">
-        <span className="font-semibold text-button-l flex-1">{item.exerciseName}</span>
+        <span className="font-semibold text-button-l flex-1">
+          {item.exerciseName}
+        </span>
         <div className="relative" ref={menuRef}>
           <button onClick={() => setMenuOpen((v) => !v)}>
             <DotMenu />
           </button>
           {menuOpen && (
             <div className="absolute right-0 mt-2 w-32 bg-white border rounded-lg shadow-lg z-10">
-              <button className="block w-full text-left px-4 py-2 hover:bg-gray-100" onClick={handleChangeExercise}>
+              <button
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                onClick={handleChangeExercise}
+              >
                 운동 바꾸기
               </button>
               <button
@@ -119,11 +129,18 @@ export default function DraggableExerciseCard({
         <div className="grid grid-cols-[40px_1fr_1fr] gap-2 mb-2 text-xs">
           <div></div>
           <div className="flex justify-center items-center text-center">kg</div>
-          <div className="flex justify-center items-center text-center">횟수</div>
+          <div className="flex justify-center items-center text-center">
+            횟수
+          </div>
         </div>
         {setList.map((set: SetInfo, setIdx: number) => (
-          <div key={set.setId} className="grid grid-cols-[40px_1fr_1fr] gap-2 mb-2 space-y-1">
-            <div className="text-xs text-gray-400 flex items-center">{setIdx + 1}세트</div>
+          <div
+            key={set.setId}
+            className="grid grid-cols-[40px_1fr_1fr] gap-2 mb-2 space-y-1"
+          >
+            <div className="text-xs text-gray-400 flex items-center">
+              {setIdx + 1}세트
+            </div>
             <div className="flex items-center justify-center">
               <Controller
                 name={`sets.${index}.setList.${setIdx}.weight`}

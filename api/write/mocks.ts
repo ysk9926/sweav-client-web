@@ -6,7 +6,7 @@ export const mockWeightTrainingResponse: IExerciseSearchRes = {
       id: 1,
       name: "스쿼트",
       type: "WEIGHT_TRAINING",
-      isUserCreated: false,
+      isUserCreated: true,
       createdAt: "2024-03-20T00:00:00Z",
       modifiedAt: "2024-03-20T00:00:00Z",
       parts: [

@@ -19,7 +19,7 @@ import { setCookie, TokenStorageKey } from "@/components/hook/setCookie";
 import { useExerciseSearchDataStore } from "@/stores/exerciseSearchDataStore";
 import { mockCardioExerciseResponse } from "@/api/write/mocks";
 
-export default function CardioListItems() {
+export default function CardioListItems({ date }: { date: string }) {
   // 버튼 pb 관련련
   const isShort = useIsShortViewportHeight(600);
 
@@ -92,7 +92,7 @@ export default function CardioListItems() {
         observerRef={observerRef}
         isLoading={isLoading}
       />
-      <CardioSelectButton selectedV={selectedV} isShort={isShort} />
+      <CardioSelectButton selectedV={selectedV} isShort={isShort} date={date} />
     </div>
   );
 }

@@ -1,10 +1,11 @@
 import Check from "@/shared/icons/Check";
 import { IExerciseItem } from "@/types/write";
-import { RefCallback } from "react";
-import EditPopOver from "../../button/EditPopOver";
+import { useState, useRef } from "react";
+import DotMenu from "@/shared/icons/DotMenu";
+import ReportExerciseModal from "./ReportExerciseModal";
+import ReportPopover from "./ReportPopover";
 
 interface Props {
-  isReplace: boolean;
   exercises: IExerciseItem[];
   selectedV: IExerciseItem[];
   selectExercise: (ex: IExerciseItem) => void;
@@ -17,7 +18,6 @@ interface Props {
 }
 
 export default function WeightItems({
-  isReplace,
   exercises,
   selectedV,
   selectExercise,
@@ -27,10 +27,16 @@ export default function WeightItems({
   isLoading,
   isChangeMode = false,
 }: Props) {
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState<IExerciseItem | null>(null);
+  const [popoverOpenId, setPopoverOpenId] = useState<number | null>(null);
+
   if (isLoading) {
     return (
       <div className="w-full h-full flex flex-col justify-center items-center space-y-4">
-        <span className="text-text-neutral-secondary text-body-m">불러오는 중...</span>
+        <span className="text-text-neutral-secondary text-body-m">
+          불러오는 중...
+        </span>
       </div>
     );
   }
@@ -38,7 +44,9 @@ export default function WeightItems({
   if (exercises.length === 0) {
     return (
       <div className="w-full h-full flex flex-col justify-center items-center space-y-4">
-        <span className="text-text-neutral-tertiary text-body-m">검색어와 일치하는 운동이 없어요.</span>
+        <span className="text-text-neutral-tertiary text-body-m">
+          검색어와 일치하는 운동이 없어요.
+        </span>
         <div
           onClick={onOpen}
           className="h-10 px-4 flex justify-center items-center bg-button-fill-brand-default text-button-text-neutral-white rounded-xl text-button-l font-semibold"
@@ -51,9 +59,17 @@ export default function WeightItems({
 
   return (
     <div className="flex-1 overflow-auto min-h-0">
+      <ReportExerciseModal
+        isOpen={reportModalOpen}
+        onOpenChange={setReportModalOpen}
+        exercise={reportTarget}
+      />
       {exercises.map((exercise, idx) => {
         const selectedIndex = selectedV.findIndex((e) => e.id === exercise.id);
         const isSelected = selectedIndex > -1;
+        const anchorRef = useRef<HTMLDivElement>(
+          null
+        ) as React.RefObject<HTMLDivElement>;
 
         return (
           <div
@@ -89,12 +105,38 @@ export default function WeightItems({
                   {selectedIndex + 1}
                 </div>
               ))}
-            {!isSelected && exercise.isUserCreated && <EditPopOver target={exercise} />}
+            {!isSelected && exercise.isUserCreated && (
+              <div className="ml-2 cursor-pointer relative" ref={anchorRef}>
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPopoverOpenId(
+                      popoverOpenId === exercise.id ? null : exercise.id
+                    );
+                  }}
+                >
+                  <DotMenu />
+                </div>
+                <ReportPopover
+                  open={popoverOpenId === exercise.id}
+                  onClose={() => setPopoverOpenId(null)}
+                  onReportClick={() => {
+                    setReportTarget(exercise);
+                    setReportModalOpen(true);
+                  }}
+                  anchorRef={anchorRef}
+                />
+              </div>
+            )}
           </div>
         );
       })}
 
-      {isFetchingNextPage && <div className="text-center p-4 text-sm text-gray-500">불러오는 중...</div>}
+      {isFetchingNextPage && (
+        <div className="text-center p-4 text-sm text-gray-500">
+          불러오는 중...
+        </div>
+      )}
     </div>
   );
 }

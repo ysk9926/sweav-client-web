@@ -2,11 +2,18 @@ import WriteNavigationBar from "@/components/write/navigationbar/WriteNavigation
 import WeightItemList from "@/components/write/weight/list/WeightItemList";
 import { ExerciseTypeEnum } from "@/types/write";
 
-export default function WriteWeightPg() {
+interface PageProps {
+  params: {
+    date: string;
+  };
+}
+
+export default function WriteWeightPg({ params }: PageProps) {
+  const { date } = params;
   return (
     <div className="grid grid-rows-[4rem_1fr] h-dvh w-dvw">
       <WriteNavigationBar type={ExerciseTypeEnum.WEIGHT_TRAINING} />
-      <WeightItemList />
+      <WeightItemList date={date} />
     </div>
   );
 }

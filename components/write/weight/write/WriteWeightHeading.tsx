@@ -2,15 +2,23 @@
 
 import { useSelectedWeightDataStore } from "@/stores/selectedWeightDataStore";
 import { IExerciseItem } from "@/types/write";
-import { useState, useRef } from "react";
-import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
+import { useState } from "react";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from "@hello-pangea/dnd";
 import DraggableExerciseCard from "./DraggableExerciseCard";
 import { ExerciseItemWithSetInfo } from "./types";
 import NextButton from "./NextButton";
 import { useForm, FormProvider } from "react-hook-form";
 import PlusIcon from "@/shared/icons/PlusIcon";
+import { useRouter } from "next/navigation";
 
-function convertToExerciseItemWithSetInfo(items: IExerciseItem[]): ExerciseItemWithSetInfo[] {
+function convertToExerciseItemWithSetInfo(
+  items: IExerciseItem[]
+): ExerciseItemWithSetInfo[] {
   return items.map((item) => ({
     itemId: item.id.toString(),
     exerciseName: item.name,
@@ -24,8 +32,9 @@ function convertToExerciseItemWithSetInfo(items: IExerciseItem[]): ExerciseItemW
   }));
 }
 
-export default function WriteWeightHeading() {
-  const { selectedWeightData, reorderSelectedWeightData } = useSelectedWeightDataStore();
+export default function WriteWeightHeading({ date }: { date: string }) {
+  const { selectedWeightData, reorderSelectedWeightData } =
+    useSelectedWeightDataStore();
   const [isReorderMode, setIsReorderMode] = useState(false);
 
   // react-hook-form setup
@@ -41,7 +50,9 @@ export default function WriteWeightHeading() {
 
   // 모든 운동의 weight, reps가 0이 아닌지 확인하는 함수
   const isAllExercisesValid = () => {
-    return sets.every((exercise) => exercise.setList.every((set) => set.weight > 0 && set.reps > 0));
+    return sets.every((exercise) =>
+      exercise.setList.every((set) => set.weight > 0 && set.reps > 0)
+    );
   };
 
   // DnD 완료 시 순서 변경
@@ -58,6 +69,8 @@ export default function WriteWeightHeading() {
     reorderSelectedWeightData(result.source.index, result.destination.index);
   };
 
+  const router = useRouter();
+
   return (
     <FormProvider {...methods}>
       <div className="h-full flex flex-col justify-between min-h-0 bg-fill-neutral-secondary">
@@ -66,7 +79,9 @@ export default function WriteWeightHeading() {
           <div className="sticky top-0 z-10 bg-fill-neutral-secondary">
             <div className="flex items-center justify-between px-6 py-3">
               <div className="flex items-center justify-center text-text-neutral-default">
-                <span className=" font-outfit font-semibold text-brand-m">{selectedWeightData.length}</span>
+                <span className=" font-outfit font-semibold text-brand-m">
+                  {selectedWeightData.length}
+                </span>
                 <span className=" font-semibold text-heading-s">종목</span>
               </div>
               <button
@@ -86,9 +101,17 @@ export default function WriteWeightHeading() {
             <DragDropContext onDragEnd={onDragEnd}>
               <Droppable droppableId="exercise-list">
                 {(provided) => (
-                  <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-3">
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className="space-y-3"
+                  >
                     {sets.map((item, idx) => (
-                      <Draggable key={item.itemId} draggableId={item.itemId} index={idx}>
+                      <Draggable
+                        key={item.itemId}
+                        draggableId={item.itemId}
+                        index={idx}
+                      >
                         {(provided, snapshot) => (
                           <DraggableExerciseCard
                             item={item}
@@ -96,6 +119,7 @@ export default function WriteWeightHeading() {
                             provided={provided}
                             snapshot={snapshot}
                             isReorderMode={isReorderMode}
+                            date={date}
                           />
                         )}
                       </Draggable>
@@ -107,8 +131,13 @@ export default function WriteWeightHeading() {
             </DragDropContext>
           </div>
           {isReorderMode ? null : (
-            <div className="flex justify-center items-center gap-2 mb-4">
-              <span className="text-text-neutral-tertiary text-button-m font-semibold">운동 추가하기</span>
+            <div
+              className="flex justify-center items-center gap-2 mb-4"
+              onClick={() => router.back()}
+            >
+              <span className="text-text-neutral-tertiary text-button-m font-semibold">
+                운동 추가하기
+              </span>
               <PlusIcon color="#bbbab7" />
             </div>
           )}

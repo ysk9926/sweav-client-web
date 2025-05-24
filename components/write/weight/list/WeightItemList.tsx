@@ -2,6 +2,7 @@
 
 import { useIsShortViewportHeight } from "@/components/hook/useIsShortHeight";
 import { useExerciseSearchDataStore } from "@/stores/exerciseSearchDataStore";
+import { useSelectedWeightDataStore } from "@/stores/selectedWeightDataStore";
 import {
   ExercisePart,
   ExerciseSearchInputForm,
@@ -21,8 +22,13 @@ import WeightSelectButton from "../../button/WeightSelectBtn";
 import SelectedWeightChips from "./SelectedWeightChips";
 import { mockWeightTrainingResponse } from "@/api/write/mocks"; // 임시코드: 목데이터 import
 
-export default function WeightItemList() {
+interface WeightItemListProps {
+  date: string;
+}
+
+export default function WeightItemList({ date }: WeightItemListProps) {
   const isShort = useIsShortViewportHeight(600);
+  const { selectedWeightData } = useSelectedWeightDataStore();
 
   // 검색 인풋 데이터 관리
   const { register, watch, setValue } = useForm<ExerciseSearchInputForm>({
@@ -73,7 +79,8 @@ export default function WeightItemList() {
   });
 
   // 운동 선택
-  const [selectedV, setSelectedV] = useState<IExerciseItem[]>([]);
+  const [selectedV, setSelectedV] =
+    useState<IExerciseItem[]>(selectedWeightData);
   const selectExercise = (exercise: IExerciseItem) => {
     setSelectedV((prev) => {
       const exists = prev.some((e) => e.id === exercise.id);
@@ -111,7 +118,7 @@ export default function WeightItemList() {
         observerRef={observerRef}
         isLoading={isLoading}
       />
-      <WeightSelectButton selectedV={selectedV} isShort={isShort} />
+      <WeightSelectButton selectedV={selectedV} isShort={isShort} date={date} />
     </div>
   );
 }
