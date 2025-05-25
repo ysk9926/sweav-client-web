@@ -14,7 +14,7 @@ export default async function ExercisePage({
 }) {
   const router = useRouter();
   const { date } = await params;
-  const accessToken = useAccessToken();
+  // const accessToken = useAccessToken();
 
   // if (!accessToken) {
   //   return <div>다시 요청해주세요ㅠㅠ</div>;
